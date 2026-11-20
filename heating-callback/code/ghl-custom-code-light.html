@@ -1,0 +1,664 @@
+<!-- ============================================================
+  City & Suburban Heating & Cooling · Heating callback landing page
+  Two-step request form (Step 1: contact + problem, Step 2: address)
+
+  HOW TO USE IN GOHIGHLEVEL
+  Paste this whole block into one "Custom JS/HTML" (Code) element,
+  inside a full-width section with 0 padding. See README for details.
+
+  SETTINGS: edit the CSQ_CONFIG block just below this comment.
+============================================================ -->
+<script>
+  window.CSQ_CONFIG = {
+    /* Paste the GHL Workflow "Inbound Webhook" URL here. Leave empty to test the page without sending. */
+    webhookUrl: "",
+    /* Optional: send people to a separate thank-you page instead of the built-in thank-you screen. */
+    thankYouUrl: "",
+    /* Also send the lead after Step 1, so a contact exists even if Step 2 is never finished. */
+    sendStep1: true,
+    /* The coupon hides itself automatically after this moment (Chicago time). */
+    offerEndsAt: "2026-11-30T23:59:59-06:00",
+    phoneE164: "+17732383838"
+  };
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&family=Ubuntu:wght@700&display=swap" rel="stylesheet">
+
+<style>
+  #csq-wrap{background:#F3F6F8;width:100%;}
+  #csq{--navy:#09263A;--navy2:#0A4265;--red:#DD382B;--red-hi:#FF5A4C;--blue:#186AA4;--sky:#73B9EA;--text:#3F3F3F;--muted:#606060;--line:#E9EBED;--field:#F6F8F9;--field-line:#D2D2D2;--tint:#F3F6F8;
+    max-width:480px;margin:0 auto;background:#fff;color:var(--text);font-family:"Noto Sans",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;overflow:hidden;position:relative;text-align:left}
+  #csq *,#csq *::before,#csq *::after{box-sizing:border-box}
+  #csq h1,#csq h2,#csq h3,#csq p,#csq ul,#csq ol,#csq li,#csq figure,#csq fieldset,#csq legend{margin:0;padding:0;border:0;list-style:none}
+  #csq a{text-decoration:none;color:inherit}
+  #csq button{font:inherit;cursor:pointer;border:0;background:none;color:inherit;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  #csq a{-webkit-tap-highlight-color:transparent}
+  #csq img{display:block;max-width:none;border:0}
+  #csq svg{display:block;flex-shrink:0}
+  #csq .csq-ubuntu{font-family:"Ubuntu",system-ui,sans-serif;font-weight:700}
+  #csq [hidden]{display:none !important}
+
+  /* Header */
+  #csq .csq-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--line);background:#fff}
+  #csq .csq-logo{width:136px;height:48px;object-fit:contain;object-position:left center}
+  #csq .csq-pill{display:flex;align-items:center;gap:8px;background:var(--red);color:#fff;border-radius:60px;padding:11px 18px;font-size:14px;font-weight:700;letter-spacing:.04em;line-height:16px}
+
+  /* Hero */
+  #csq .csq-hero{position:relative;overflow:hidden;background:var(--navy);padding:26px 20px 24px;display:flex;flex-direction:column;gap:14px}
+  #csq .csq-hero-photo{position:absolute;top:0;right:-190px;width:780px;height:420px;object-fit:cover;object-position:50% 50%}
+  #csq .csq-hero-fade{position:absolute;inset:0;background:linear-gradient(90deg,#09263A 34%,rgba(9,38,58,.78) 70%,rgba(9,38,58,.5) 100%)}
+  #csq .csq-hero > *:not(.csq-hero-photo):not(.csq-hero-fade){position:relative}
+  #csq .csq-ratings{display:flex;align-items:center;gap:14px}
+  #csq .csq-ratings img{height:20px;width:auto}
+  #csq .csq-vr{width:1px;height:18px;background:rgba(255,255,255,.3)}
+  #csq .csq-h1{color:#fff;font-size:40px;line-height:44px;letter-spacing:-.01em}
+  #csq .csq-h1 span{color:var(--red-hi)}
+  #csq .csq-hero-sub{color:rgba(255,255,255,.84);font-size:16px;line-height:24px}
+
+  /* Action block */
+  #csq .csq-action{background:var(--navy);padding:0 20px 28px;display:flex;flex-direction:column;gap:14px}
+  #csq .csq-callbtn{display:flex;align-items:center;gap:14px;background:var(--red);border-radius:60px;padding:12px 22px 12px 12px;box-shadow:0 12px 28px rgba(221,56,43,.45);transition:transform .15s ease,box-shadow .15s ease}
+  #csq .csq-callbtn:active{transform:scale(.98)}
+  #csq .csq-callbtn-ico{width:46px;height:46px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  #csq .csq-callbtn-num{color:#fff;font-size:21px;line-height:25px}
+  #csq .csq-callbtn-sub{color:rgba(255,255,255,.9);font-size:13px;font-weight:500;line-height:17px;margin-top:1px}
+  #csq .csq-divider{display:flex;align-items:center;gap:12px;padding:4px 6px 0}
+  #csq .csq-divider i{flex:1;height:1px;background:rgba(255,255,255,.18)}
+  #csq .csq-divider span{color:rgba(255,255,255,.7);font-size:12px;font-weight:600;letter-spacing:.12em;line-height:14px;white-space:nowrap}
+
+  /* Form panel */
+  #csq .csq-panel{background:#fff;border-radius:24px;box-shadow:0 4px 16px 1px rgba(0,0,0,.15);padding:20px 18px;display:flex;flex-direction:column;gap:14px;scroll-margin-top:16px}
+  #csq .csq-steps{display:flex;align-items:center;gap:10px}
+  #csq .csq-bars{display:flex;gap:6px;flex:1}
+  #csq .csq-bars i{flex:1;height:5px;border-radius:60px;background:var(--line)}
+  #csq .csq-bars i.on{background:var(--red)}
+  #csq .csq-steplabel{color:var(--muted);font-size:12px;font-weight:600;letter-spacing:.1em;line-height:16px;white-space:nowrap}
+  #csq .csq-panel-title{color:var(--navy);font-size:18px;line-height:22px}
+  #csq .csq-fields{display:flex;flex-direction:column;gap:10px}
+  #csq .csq-field{display:flex;flex-direction:column;gap:6px;min-width:0}
+  #csq .csq-field label{color:var(--navy);font-size:13px;font-weight:600;line-height:16px}
+  #csq .csq-input{width:100%;height:50px;background:var(--field);border:1px solid var(--field-line);border-radius:8px;padding:0 14px;font-family:"Noto Sans",system-ui,sans-serif;font-size:16px;line-height:20px;color:var(--navy);outline:none;-webkit-appearance:none;appearance:none;margin:0;box-shadow:none;transition:border-color .15s ease,box-shadow .15s ease,background-color .15s ease}
+  #csq textarea.csq-input{height:96px;padding:12px 14px;line-height:22px;resize:vertical}
+  #csq .csq-input::placeholder{color:#8A8A8A;opacity:1}
+  #csq .csq-input:focus{border-color:var(--blue);background:#fff;box-shadow:0 0 0 3px rgba(24,106,164,.15)}
+  #csq .csq-field.is-bad .csq-input{border-color:var(--red);background:#FFF5F4}
+  #csq .csq-err{color:#B3261E;font-size:12px;line-height:16px;display:none}
+  #csq .csq-field.is-bad .csq-err{display:block}
+  #csq .csq-select{position:relative}
+  #csq .csq-select select.csq-input{background:#fff;padding-right:36px}
+  #csq .csq-select svg{position:absolute;right:14px;top:18px;pointer-events:none}
+  #csq .csq-row{display:flex;gap:10px}
+  #csq .csq-row > .csq-field{flex:1 1 0}
+  #csq .csq-row > .csq-field.grow{flex:1.4 1 0}
+  #csq .csq-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;border-radius:60px;font-size:16px;font-weight:700;letter-spacing:.04em;line-height:20px;transition:transform .15s ease,opacity .15s ease}
+  #csq .csq-btn:active{transform:scale(.98)}
+  #csq .csq-btn[disabled]{opacity:.7;cursor:progress}
+  #csq .csq-btn-navy{background:var(--navy);color:#fff;height:54px}
+  #csq .csq-btn-red{background:var(--red);color:#fff;height:56px;box-shadow:0 10px 24px rgba(221,56,43,.35)}
+  #csq .csq-note{color:var(--muted);font-size:12px;line-height:17px;text-align:center}
+  #csq .csq-hp{position:absolute !important;left:-9999px !important;width:1px;height:1px;opacity:0}
+
+  /* Trust */
+  #csq .csq-trust{padding:26px 20px 0;display:flex;flex-direction:column;gap:18px}
+  #csq .csq-trust-row{display:flex;justify-content:space-between}
+  #csq .csq-trust-item{width:104px;display:flex;flex-direction:column;align-items:center;gap:8px;color:var(--navy);font-size:13px;font-weight:600;line-height:17px;text-align:center}
+  #csq .csq-trust-item img{width:40px;height:40px;object-fit:contain}
+  #csq .csq-dealer{display:flex;align-items:center;justify-content:center;gap:12px;background:var(--tint);border-radius:8px;padding:14px 16px;color:var(--navy);font-size:13px;font-weight:600;line-height:17px}
+  #csq .csq-dealer img{width:150px;height:25px;object-fit:contain}
+  #csq .csq-dealer i{width:1px;height:22px;background:var(--field-line)}
+
+  /* Coupon */
+  #csq .csq-offer{padding:24px 20px 0}
+  #csq .csq-coupon{display:flex;align-items:center;gap:16px;background:#FFF5F4;border:2px dashed var(--red);border-radius:8px;padding:16px 18px}
+  #csq .csq-coupon-amt{color:var(--red);font-size:36px;line-height:38px;flex-shrink:0}
+  #csq .csq-coupon-t{color:var(--navy);font-size:16px;line-height:20px}
+  #csq .csq-coupon-s{color:var(--text);font-size:13px;line-height:18px;margin-top:3px}
+
+  /* Read-more sections */
+  #csq .csq-sec{padding:36px 20px 32px;display:flex;flex-direction:column;gap:16px}
+  #csq .csq-sec.first{padding-top:40px}
+  #csq .csq-sec.tint{background:var(--tint);padding:36px 20px;gap:14px}
+  #csq .csq-sec.areas{gap:12px}
+  #csq .csq-eyebrow{display:flex;align-items:center;gap:10px;color:var(--blue);font-size:12px;font-weight:700;letter-spacing:.14em;line-height:16px}
+  #csq .csq-eyebrow::before{content:"";width:22px;height:3px;background:var(--red);flex-shrink:0}
+  #csq .csq-h2{color:var(--navy);font-size:26px;line-height:31px}
+  #csq .csq-h2 span{color:var(--red)}
+  #csq .csq-step{display:flex;align-items:flex-start;gap:14px}
+  #csq .csq-num{width:34px;height:34px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;line-height:18px;flex-shrink:0}
+  #csq .csq-num.red{background:var(--red)}
+  #csq .csq-step-t{color:var(--navy);font-size:16px;line-height:21px}
+  #csq .csq-step-d{color:var(--text);font-size:14px;line-height:21px;margin-top:2px}
+  #csq .csq-list{background:#E2E7EB;border-radius:16px;overflow:hidden;display:flex;flex-direction:column;gap:1px}
+  #csq .csq-list li{background:#fff;display:flex;align-items:center;gap:14px;padding:16px}
+  #csq .csq-list-t{color:var(--navy);font-size:16px;line-height:20px}
+  #csq .csq-list-d{color:var(--muted);font-size:13px;line-height:18px;margin-top:2px}
+  #csq .csq-photo{width:100%;height:200px;object-fit:cover;border-radius:16px}
+  #csq .csq-why{display:flex;flex-direction:column;gap:14px}
+  #csq .csq-why li{display:flex;gap:12px;color:var(--text);font-size:14px;line-height:21px}
+  #csq .csq-why li img{width:30px;height:30px;object-fit:contain;flex-shrink:0}
+  #csq .csq-why b{color:var(--navy);font-weight:700}
+  #csq .csq-faq{background:#fff;border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:6px}
+  #csq .csq-faq h3{color:var(--navy);font-size:16px;line-height:21px}
+  #csq .csq-faq p{color:var(--text);font-size:14px;line-height:21px}
+  #csq .csq-areas{color:var(--text);font-size:14px;line-height:24px}
+  #csq .csq-areas-note{color:var(--muted);font-size:13px;line-height:19px}
+
+  /* Final CTA */
+  #csq .csq-final{background:linear-gradient(110.11deg,#0A4265 6.31%,#09263A 101.91%);padding:40px 20px 44px;display:flex;flex-direction:column;gap:14px}
+  #csq .csq-final-h{color:#fff;font-size:30px;line-height:35px}
+  #csq .csq-final-h span{color:var(--red-hi)}
+  #csq .csq-final-p{color:rgba(255,255,255,.84);font-size:15px;line-height:22px}
+  #csq .csq-final .csq-btn{font-size:15px}
+  #csq .csq-btn-ghost{height:54px;border:2px solid rgba(255,255,255,.6);color:#fff}
+  #csq .csq-final-foot{display:flex;align-items:center;justify-content:center;gap:10px;padding-top:10px;color:rgba(255,255,255,.7);font-size:12px;line-height:17px}
+  #csq .csq-chip{background:#fff;border-radius:6px;padding:6px 10px;display:flex}
+  #csq .csq-chip img{width:90px;height:32px;object-fit:contain}
+
+  /* Sticky bar */
+  #csq .csq-spacer{height:96px}
+  #csq .csq-sticky{position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:100%;max-width:480px;z-index:9999;background:#fff;box-shadow:0 -4px 16px rgba(0,0,0,.12);display:flex;gap:10px;padding:12px 16px calc(14px + env(safe-area-inset-bottom,0px))}
+  #csq .csq-sticky a,#csq .csq-sticky button{height:52px;border-radius:60px;display:flex;align-items:center;justify-content:center;gap:8px;font-size:15px;font-weight:700;letter-spacing:.04em;line-height:20px;transition:transform .15s ease}
+  #csq .csq-sticky a:active,#csq .csq-sticky button:active{transform:scale(.98)}
+  #csq .csq-sticky-call{flex:1.2 1 0;background:var(--red);color:#fff}
+  #csq .csq-sticky-quote{flex:1 1 0;border:2px solid var(--navy) !important;color:var(--navy)}
+
+  /* Step 2 */
+  #csq .csq-progress{padding:20px 20px 0;display:flex;flex-direction:column;gap:10px}
+  #csq .csq-progress-top{display:flex;align-items:center;justify-content:space-between}
+  #csq .csq-back{display:flex;align-items:center;gap:6px;color:var(--navy);font-size:14px;font-weight:600;line-height:18px;padding:6px 6px 6px 0}
+  #csq .csq-s2-head{padding:22px 20px 0;display:flex;flex-direction:column;gap:10px}
+  #csq .csq-s2-h{color:var(--navy);font-size:30px;line-height:35px}
+  #csq .csq-s2-h span{color:var(--red)}
+  #csq .csq-summary{display:flex;align-items:center;gap:10px;background:var(--tint);border-radius:8px;padding:12px 14px}
+  #csq .csq-summary-t{flex:1;color:var(--navy);font-size:14px;font-weight:600;line-height:18px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  #csq .csq-edit{color:var(--blue);font-size:13px;font-weight:600;line-height:18px;padding:4px 0 4px 8px}
+  #csq .csq-s2-form{padding:18px 20px 0;display:flex;flex-direction:column;gap:12px}
+  #csq .csq-consent{color:var(--muted);font-size:12px;line-height:17px}
+  #csq .csq-next{padding:24px 20px 32px;display:flex;flex-direction:column;gap:14px}
+  #csq .csq-next hr{border:0;height:1px;background:var(--line);margin:0}
+  #csq .csq-next-t{color:var(--navy);font-size:16px;line-height:20px}
+  #csq .csq-next li{display:flex;align-items:flex-start;gap:12px;color:var(--text);font-size:14px;line-height:20px}
+  #csq .csq-next .csq-num{width:26px;height:26px;font-size:13px;line-height:16px}
+  #csq .csq-formerr{color:#B3261E;font-size:13px;line-height:18px;text-align:center}
+
+  /* Thank you */
+  #csq .csq-ty{background:var(--navy);min-height:100vh}
+  #csq .csq-ty-logo{display:flex;justify-content:center;padding:24px 20px 0}
+  #csq .csq-ty-logo div{background:#fff;border-radius:8px;padding:8px 14px;display:flex}
+  #csq .csq-ty-logo img{width:120px;height:42px;object-fit:contain}
+  #csq .csq-ty-confirm{display:flex;flex-direction:column;align-items:center;gap:14px;padding:44px 28px 0;text-align:center}
+  #csq .csq-check{width:76px;height:76px;border-radius:50%;background:var(--red);box-shadow:0 0 0 10px rgba(221,56,43,.18);display:flex;align-items:center;justify-content:center}
+  #csq .csq-ty-h{color:#fff;font-size:32px;line-height:38px}
+  #csq .csq-ty-p{color:rgba(255,255,255,.84);font-size:16px;line-height:24px}
+  #csq .csq-ty-p b{color:#fff}
+  #csq .csq-ty-call{padding:26px 20px 0}
+  #csq .csq-btn-white{background:#fff;color:var(--navy);height:56px;font-size:15px}
+  #csq .csq-ty-wait{padding:30px 20px 40px;display:flex;flex-direction:column;gap:14px}
+  #csq .csq-ty-eyebrow{color:var(--sky);font-size:12px;font-weight:700;letter-spacing:.14em;line-height:16px}
+  #csq .csq-tip{background:rgba(255,255,255,.07);border-radius:8px;padding:14px 16px;display:flex;gap:12px;color:rgba(255,255,255,.88);font-size:14px;line-height:21px}
+  #csq .csq-tip b{color:var(--sky);font-family:"Ubuntu",system-ui,sans-serif;font-size:16px;line-height:21px;flex-shrink:0}
+  #csq .csq-tip.warn{background:rgba(221,56,43,.16);border:1px solid rgba(221,56,43,.5);color:#fff}
+  #csq .csq-tip.warn b{color:var(--red-hi)}
+
+  /* Motion: gentle and optional */
+  #csq.csq-js [data-reveal]{opacity:0;transform:translateY(12px);transition:opacity .3s ease,transform .3s ease}
+  #csq.csq-js [data-reveal].is-in{opacity:1;transform:none}
+  #csq .csq-view{animation:csqIn .25s ease both}
+  @keyframes csqIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  @media (prefers-reduced-motion:reduce){
+    #csq.csq-js [data-reveal]{opacity:1;transform:none;transition:none}
+    #csq .csq-view{animation:none}
+    #csq .csq-callbtn,#csq .csq-btn,#csq .csq-sticky a,#csq .csq-sticky button{transition:none}
+  }
+  @media (max-width:360px){
+    #csq .csq-h1{font-size:36px;line-height:40px}
+    #csq .csq-trust-item{width:96px}
+    #csq .csq-callbtn-num{font-size:19px}
+  }
+</style>
+
+<div id="csq-wrap">
+<div id="csq">
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="csq-i-phone" viewBox="0 0 24 24"><path d="M20 15.5c-1.2 0-2.4-.2-3.6-.6-.3-.1-.7 0-1 .2l-2.2 2.2c-2.8-1.4-5.1-3.8-6.6-6.6l2.2-2.2c.3-.3.4-.7.2-1-.3-1.1-.5-2.3-.5-3.5 0-.6-.4-1-1-1H4c-.6 0-1 .4-1 1 0 9.4 7.6 17 17 17 .6 0 1-.4 1-1v-3.5c0-.6-.4-1-1-1z"/></symbol>
+    <symbol id="csq-i-shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="none" stroke="#09263A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" fill="none" stroke="#DD382B" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="csq-i-chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="#606060" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  </svg>
+
+  <!-- ================= VIEW 1 · LANDING + STEP 1 ================= -->
+  <div class="csq-view" data-view="landing">
+    <header class="csq-header">
+      <img class="csq-logo" src="https://krishna-kaanth.github.io/city-suburban-preview/heating-callback/img/city-suburban-logo.png" alt="City &amp; Suburban Heating &amp; Cooling" width="136" height="48">
+      <a class="csq-pill" href="tel:+17732383838" data-call="header">
+        <svg width="16" height="16" fill="#FFFFFF" aria-hidden="true"><use href="#csq-i-phone"/></svg>CALL NOW
+      </a>
+    </header>
+
+    <section class="csq-hero">
+      <img class="csq-hero-photo" src="https://krishna-kaanth.github.io/city-suburban-preview/heating-callback/img/hero.jpg" alt="" width="780" height="420" fetchpriority="high">
+      <div class="csq-hero-fade"></div>
+      <div class="csq-ratings">
+        <img src="https://krishna-kaanth.github.io/city-suburban-preview/heating-callback/img/google-rating.png" alt="Rated 5.0 on Google" width="116" height="20">
+        <i class="csq-vr"></i>
+        <img src="https://krishna-kaanth.github.io/city-suburban-preview/heating-callback/img/yelp-rating.png" alt="Rated 4.9 on Yelp" width="114" height="20">
+      </div>
+      <h1 class="csq-h1 csq-ubuntu">Cold house?<br>We'll get your<br><span>heat back on.</span></h1>
+      <p class="csq-hero-sub">Family-owned, veteran-owned heating techs across Chicago and the North Shore. Same-day repair when available, and you hear the price before any work starts.</p>
+    </section>
+
+    <section class="csq-action">
+      <a class="csq-callbtn" href="tel:+17732383838" data-call="hero">
+        <span class="csq-callbtn-ico"><svg width="20" height="20" fill="#DD382B" aria-hidden="true"><use href="#csq-i-phone"/></svg></span>
+        <span>
+          <span class="csq-callbtn-num csq-ubuntu" style="display:block">(773) 238-3838</span>
+          <span class="csq-callbtn-sub" style="display:block">Tap to call. Quickest way to book.</span>
+        </span>
+      </a>
+      <div class="csq-divider" aria-hidden="true"><i></i><span>OR REQUEST A CALLBACK</span><i></i></div>
+
+      <form class="csq-panel" id="csq-form1" novalidate>
+        <div class="csq-steps">
+          <div class="csq-bars" aria-hidden="true"><i class="on"></i><i></i></div>
+          <div class="csq-steplabel">STEP 1 OF 2</div>
+        </div>
+        <h2 class="csq-panel-title csq-ubuntu">Tell us what's going on</h2>
+        <div class="csq-fields">
+          <div class="csq-field">
+            <label for="csq-name">Full name</label>
+            <input class="csq-input" id="csq-name" name="full_name" type="text" autocomplete="name" placeholder="e.g. Maria Lopez" required>
+            <div class="csq-err">Please enter your name.</div>
+          </div>
+          <div class="csq-field">
+            <label for="csq-phone">Mobile number</label>
+            <input class="csq-input" id="csq-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel-national" placeholder="(312) 555-0123" required>
+            <div class="csq-err">Please enter a 10-digit phone number.</div>
+          </div>
+          <div class="csq-field">
+            <label for="csq-email">Email</label>
+            <input class="csq-input" id="csq-email" name="email" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" placeholder="you@email.com" required>
+            <div class="csq-err">Please enter a valid email address.</div>
+          </div>
+          <div class="csq-field">
+            <label for="csq-issue">What's happening with your heating system?</label>
+            <textarea class="csq-input" id="csq-issue" name="heating_issue" rows="3" placeholder="e.g. The furnace runs but the house stays cold, and it's making a banging noise." required></textarea>
+            <div class="csq-err">Tell us a little about the problem.</div>
+          </div>
+          <input class="csq-hp" type="text" name="company_website" tabindex="-1" autocomplete="off" aria-hidden="true">
+        </div>
+        <button class="csq-btn csq-btn-navy" type="submit">CONTINUE TO STEP 2&nbsp;&nbsp;→</button>
+        <p class="csq-note">Takes about 30 seconds. Your address comes next, so we know where to send the tech.</p>
+      </form>
+    </section>
+
+    <section class="csq-trust" data-reveal>
+      <div class="csq-trust-row">
+        <div class="csq-trust-item"><img src="https://krishna-kaanth.github.io/city-suburban-preview/heating-callback/img/chicago-local.png" alt="" width="40" height="40">Chicago local</div>
+        <div class="csq-trust-item"><img src="https://krishna-kaanth.github.io/city-suburban-preview/heating-callback/img/family-owned.png" alt="" width="40" height="40">Family &amp; veteran-owned</div>
+        <div class="csq-trust-item"><svg width="40" height="40" aria-hidden="true"><use href="#csq-i-shield"/></svg>Licensed &amp; insured</div>
+      </div>
+      <div class="csq-dealer">
+        <img src="https://krishna-kaanth.github.io/city-suburban-preview/heating-callback/img/american-standard-logo.png" alt="American Standard Heating &amp; Air Conditioning" width="150" height="25">
+        <i></i>Local dealer
+      </div>
+    </section>
+
+    <section class="csq-offer" data-offer data-reveal>
+      <div class="csq-coupon">
+        <div class="csq-coupon-amt csq-ubuntu">$50</div>
+        <div>
+          <div class="csq-coupon-t csq-ubuntu">off your service call</div>
+          <div class="csq-coupon-s">Up to $1,000 off a new system. Winter offer ends Nov 30.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="csq-sec first" data-reveal>
+      <div class="csq-eyebrow">HOW IT WORKS</div>
+      <h2 class="csq-h2 csq-ubuntu">Warm again in <span>three steps.</span></h2>
+      <div class="csq-step"><div class="csq-num csq-ubuntu">1</div><div><div class="csq-step-t csq-ubuntu">Tell us what's wrong</div><p class="csq-step-d">Call, or leave your name and number. It takes under a minute.</p></div></div>
+      <div class="csq-step"><div class="csq-num csq-ubuntu">2</div><div><div class="csq-step-t csq-ubuntu">We find the cause</div><p class="csq-step-d">A licensed tech diagnoses the problem and tells you the price before any work starts.</p></div></div>
+      <div class="csq-step"><div class="csq-num red csq-ubuntu">3</div><div><div class="csq-step-t csq-ubuntu">You get comfortable again</div><p class="csq-step-d">We repair it when we can. If replacing makes more sense, you get a free estimate first.</p></div></div>
+    </section>
+
+    <section class="csq-sec tint" data-reveal>
+      <div class="csq-eyebrow">WHAT WE FIX</div>
+      <h2 class="csq-h2 csq-ubuntu">Every furnace problem, <span>any brand.</span></h2>
+      <ul class="csq-list">
+        <li>
+          <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94z" fill="none" stroke="#DD382B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div><div class="csq-list-t csq-ubuntu">Furnace and heater repair</div><div class="csq-list-d">Blowing cold, short cycling, odd noises, no heat at all</div></div>
+        </li>
+        <li>
+          <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2" fill="none" stroke="#DD382B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 7h6M9 11h6M12 15v3" fill="none" stroke="#DD382B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div><div class="csq-list-t csq-ubuntu">Replacement and installation</div><div class="csq-list-d">American Standard systems, with a free in-home estimate</div></div>
+        </li>
+        <li>
+          <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 11l3 3L22 4" fill="none" stroke="#DD382B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" fill="none" stroke="#DD382B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div><div class="csq-list-t csq-ubuntu">Tune-ups and maintenance</div><div class="csq-list-d">Catch problems before the first cold snap</div></div>
+        </li>
+        <li>
+          <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v20M2 12h20M4.9 4.9l14.2 14.2M19.1 4.9L4.9 19.1" fill="none" stroke="#DD382B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div><div class="csq-list-t csq-ubuntu">AC repair and service too</div><div class="csq-list-d">One team for heating and cooling all year</div></div>
+        </li>
+      </ul>
+    </section>
+
+    <section class="csq-sec" data-reveal>
+      <div class="csq-eyebrow">WHY CITY &amp; SUBURBAN</div>
+      <h2 class="csq-h2 csq-ubuntu">The right fix, <span>not the most expensive one.</span></h2>
+      <img class="csq-photo" src="https://krishna-kaanth.github.io/city-suburban-preview/heating-callback/img/van.jpg" alt="A City &amp; Suburban Heating &amp; Cooling service van" width="350" height="200" loading="lazy">
+      <ul class="csq-why">
+        <li><img src="https://krishna-kaanth.github.io/city-suburban-preview/heating-callback/img/family-owned.png" alt="" width="30" height="30"><span><b>Family and veteran-owned.</b> A local Chicago company, not a national chain.</span></li>
+        <li><img src="https://krishna-kaanth.github.io/city-suburban-preview/heating-callback/img/chicago-local.png" alt="" width="30" height="30"><span><b>Fair, upfront pricing.</b> It's the topic Google reviewers mention most, 32 times so far.</span></li>
+        <li><svg width="30" height="30" aria-hidden="true"><use href="#csq-i-shield"/></svg><span><b>Licensed and insured techs.</b> American Standard dealer for new systems, repairs on all brands.</span></li>
+        <li><svg width="30" height="30" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2" fill="none" stroke="#09263A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 10h20" fill="none" stroke="#DD382B" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span><b>Financing available.</b> Through Wells Fargo for qualified buyers.</span></li>
+      </ul>
+    </section>
+
+    <section class="csq-sec tint" data-reveal>
+      <div class="csq-eyebrow">QUICK ANSWERS</div>
+      <h2 class="csq-h2 csq-ubuntu">Before you <span>call.</span></h2>
+      <div class="csq-faq"><h3 class="csq-ubuntu">How much does a repair cost?</h3><p>There's a service call fee to diagnose the problem, and it goes toward the repair when you go ahead. The final price depends on the issue and parts, and you hear it before we start.</p></div>
+      <div class="csq-faq"><h3 class="csq-ubuntu">How fast can you come?</h3><p>Same day when we can. Otherwise we book the earliest opening, often the next morning.</p></div>
+      <div class="csq-faq"><h3 class="csq-ubuntu">Are estimates free?</h3><p>Yes, for new system installations and replacements.</p></div>
+      <div class="csq-faq"><h3 class="csq-ubuntu">Can I spread the cost of a new furnace?</h3><p>Yes. Financing is available through Wells Fargo for qualified buyers.</p></div>
+    </section>
+
+    <section class="csq-sec areas" data-reveal>
+      <div class="csq-eyebrow">WHERE WE WORK</div>
+      <h2 class="csq-h2 csq-ubuntu">Chicago and the <span>North Shore.</span></h2>
+      <p class="csq-areas">Lincoln Park, Lakeview, Wrigleyville, Old Town, Logan Square, Wicker Park, Bucktown, Ukrainian Village, West Town, West Loop, Pilsen, Humboldt Park, Rogers Park, Skokie, Wilmette, Winnetka, Glenview, Northbrook, Niles, Park Ridge and Des Plaines.</p>
+      <p class="csq-areas-note">Don't see your area? Send a request anyway and we'll tell you straight away.</p>
+    </section>
+
+    <section class="csq-final">
+      <h2 class="csq-final-h csq-ubuntu">Don't spend another night <span>in a cold house.</span></h2>
+      <p class="csq-final-p">Tell us what's happening and we'll take it from there.</p>
+      <a class="csq-btn csq-btn-red" href="tel:+17732383838" data-call="final" style="box-shadow:none">
+        <svg width="18" height="18" fill="#FFFFFF" aria-hidden="true"><use href="#csq-i-phone"/></svg>CALL (773) 238-3838
+      </a>
+      <button class="csq-btn csq-btn-ghost" type="button" data-goto-form>GET A CALLBACK</button>
+      <div class="csq-final-foot">
+        <span class="csq-chip"><img src="https://krishna-kaanth.github.io/city-suburban-preview/heating-callback/img/city-suburban-logo.png" alt="City &amp; Suburban Heating &amp; Cooling" width="90" height="32"></span>
+        <span>1225 N Cleaver St, Chicago, IL 60642</span>
+      </div>
+    </section>
+
+    <div class="csq-spacer"></div>
+    <nav class="csq-sticky" aria-label="Quick actions">
+      <a class="csq-sticky-call" href="tel:+17732383838" data-call="sticky"><svg width="18" height="18" fill="#FFFFFF" aria-hidden="true"><use href="#csq-i-phone"/></svg>CALL NOW</a>
+      <button class="csq-sticky-quote" type="button" data-goto-form>GET A QUOTE</button>
+    </nav>
+  </div>
+
+  <!-- ================= VIEW 2 · STEP 2 (ADDRESS) ================= -->
+  <div class="csq-view" data-view="step2" hidden>
+    <header class="csq-header">
+      <img class="csq-logo" src="https://krishna-kaanth.github.io/city-suburban-preview/heating-callback/img/city-suburban-logo.png" alt="City &amp; Suburban Heating &amp; Cooling" width="136" height="48">
+      <a class="csq-pill" href="tel:+17732383838" data-call="step2">
+        <svg width="16" height="16" fill="#FFFFFF" aria-hidden="true"><use href="#csq-i-phone"/></svg>CALL NOW
+      </a>
+    </header>
+    <div class="csq-progress">
+      <div class="csq-progress-top">
+        <button class="csq-back" type="button" data-back>
+          <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6" fill="none" stroke="#09263A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>Back
+        </button>
+        <div class="csq-steplabel">STEP 2 OF 2</div>
+      </div>
+      <div class="csq-bars" aria-hidden="true"><i class="on"></i><i class="on"></i></div>
+    </div>
+    <div class="csq-s2-head">
+      <h2 class="csq-s2-h csq-ubuntu">Where should we<br><span>send the tech?</span></h2>
+      <div class="csq-summary">
+        <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z" fill="none" stroke="#DD382B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div class="csq-summary-t" data-summary>Maria · (312) 555-0123</div>
+        <button class="csq-edit" type="button" data-back>Edit</button>
+      </div>
+    </div>
+    <form class="csq-s2-form" id="csq-form2" novalidate>
+      <div class="csq-fields">
+        <div class="csq-field">
+          <label for="csq-street">Street address</label>
+          <input class="csq-input" id="csq-street" name="address1" type="text" autocomplete="street-address" placeholder="e.g. 2150 N Halsted St, Apt 2" required>
+          <div class="csq-err">Please enter your street address.</div>
+        </div>
+        <div class="csq-row">
+          <div class="csq-field grow">
+            <label for="csq-city">City</label>
+            <input class="csq-input" id="csq-city" name="city" type="text" autocomplete="address-level2" placeholder="Chicago" required>
+            <div class="csq-err">Please enter your city.</div>
+          </div>
+          <div class="csq-field">
+            <label for="csq-zip">Postal code</label>
+            <input class="csq-input" id="csq-zip" name="postal_code" type="text" inputmode="numeric" autocomplete="postal-code" maxlength="10" placeholder="60614" required>
+            <div class="csq-err">Enter a 5-digit ZIP.</div>
+          </div>
+        </div>
+        <div class="csq-row">
+          <div class="csq-field">
+            <label for="csq-state">State</label>
+            <div class="csq-select">
+              <select class="csq-input" id="csq-state" name="state" autocomplete="address-level1" required></select>
+              <svg width="14" height="14" aria-hidden="true"><use href="#csq-i-chev"/></svg>
+            </div>
+            <div class="csq-err">Please choose a state.</div>
+          </div>
+          <div class="csq-field">
+            <label for="csq-country">Country</label>
+            <div class="csq-select">
+              <select class="csq-input" id="csq-country" name="country" autocomplete="country-name" required>
+                <option value="US" selected>United States</option>
+                <option value="CA">Canada</option>
+              </select>
+              <svg width="14" height="14" aria-hidden="true"><use href="#csq-i-chev"/></svg>
+            </div>
+            <div class="csq-err">Please choose a country.</div>
+          </div>
+        </div>
+      </div>
+      <button class="csq-btn csq-btn-red" type="submit">
+        <span data-label>REQUEST MY CALLBACK</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <p class="csq-formerr" data-formerr hidden></p>
+      <p class="csq-consent">By submitting, you agree City &amp; Suburban Heating &amp; Cooling may call or text you about this request. Msg &amp; data rates may apply. Reply STOP to opt out.</p>
+    </form>
+    <div class="csq-next">
+      <hr>
+      <div class="csq-next-t csq-ubuntu">What happens next</div>
+      <ol style="display:flex;flex-direction:column;gap:14px">
+        <li><span class="csq-num csq-ubuntu">1</span>We call to understand the problem and book a time.</li>
+        <li><span class="csq-num csq-ubuntu">2</span>A tech arrives, finds the cause and gives you the price first.</li>
+        <li><span class="csq-num red csq-ubuntu">3</span>You say yes, and your home warms up again.</li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- ================= VIEW 3 · THANK YOU ================= -->
+  <div class="csq-view csq-ty" data-view="thanks" hidden>
+    <div class="csq-ty-logo"><div><img src="https://krishna-kaanth.github.io/city-suburban-preview/heating-callback/img/city-suburban-logo.png" alt="City &amp; Suburban Heating &amp; Cooling" width="120" height="42"></div></div>
+    <div class="csq-ty-confirm">
+      <div class="csq-check"><svg width="38" height="38" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l5 5L20 7" fill="none" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <h2 class="csq-ty-h csq-ubuntu" tabindex="-1" data-ty-focus>Got it. We're on it.</h2>
+      <p class="csq-ty-p">We'll call you from <b>(773) 238-3838</b> to book your visit. Keep your phone close.</p>
+    </div>
+    <div class="csq-ty-call">
+      <a class="csq-btn csq-btn-white" href="tel:+17732383838" data-call="thanks"><svg width="18" height="18" fill="#DD382B" aria-hidden="true"><use href="#csq-i-phone"/></svg>CAN'T WAIT? CALL NOW</a>
+    </div>
+    <div class="csq-ty-wait">
+      <div class="csq-ty-eyebrow">WHILE YOU WAIT</div>
+      <div class="csq-tip"><b>1</b><span>Check the thermostat is set to Heat and the furnace power switch is on.</span></div>
+      <div class="csq-tip"><b>2</b><span>Look at the furnace filter. A clogged one can shut the system down.</span></div>
+      <div class="csq-tip warn"><b>!</b><span>Smell gas? Leave the house now and call 911 from outside.</span></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+(function () {
+  var root = document.getElementById("csq");
+  if (!root) return;
+  root.classList.add("csq-js");
+  var C = Object.assign({ webhookUrl: "", thankYouUrl: "", sendStep1: true, offerEndsAt: "", phoneE164: "+17732383838" }, window.CSQ_CONFIG || {});
+  var lead = {};
+  var $ = function (s, el) { return (el || root).querySelector(s); };
+  var $$ = function (s, el) { return Array.prototype.slice.call((el || root).querySelectorAll(s)); };
+
+  /* ---------- Offer expiry ---------- */
+  if (C.offerEndsAt && Date.now() > new Date(C.offerEndsAt).getTime()) {
+    $$("[data-offer]").forEach(function (el) { el.hidden = true; });
+  }
+
+  /* ---------- States ---------- */
+  var STATES = ["Alabama","Alaska","Arizona","Arkansas","California","Colorado","Connecticut","Delaware","District of Columbia","Florida","Georgia","Hawaii","Idaho","Illinois","Indiana","Iowa","Kansas","Kentucky","Louisiana","Maine","Maryland","Massachusetts","Michigan","Minnesota","Mississippi","Missouri","Montana","Nebraska","Nevada","New Hampshire","New Jersey","New Mexico","New York","North Carolina","North Dakota","Ohio","Oklahoma","Oregon","Pennsylvania","Rhode Island","South Carolina","South Dakota","Tennessee","Texas","Utah","Vermont","Virginia","Washington","West Virginia","Wisconsin","Wyoming"];
+  var stateSel = $("#csq-state");
+  STATES.forEach(function (s) { var o = document.createElement("option"); o.value = s; o.textContent = s; if (s === "Illinois") o.selected = true; stateSel.appendChild(o); });
+
+  /* ---------- Attribution ---------- */
+  var qs = new URLSearchParams(location.search);
+  function cookie(n) { var m = document.cookie.match("(?:^|; )" + n + "=([^;]*)"); return m ? decodeURIComponent(m[1]) : ""; }
+  function attribution() {
+    var fbclid = qs.get("fbclid") || "";
+    return {
+      utm_source: qs.get("utm_source") || "", utm_medium: qs.get("utm_medium") || "", utm_campaign: qs.get("utm_campaign") || "",
+      utm_content: qs.get("utm_content") || "", utm_term: qs.get("utm_term") || "", fbclid: fbclid,
+      fbp: cookie("_fbp"), fbc: cookie("_fbc") || (fbclid ? "fb.1." + Date.now() + "." + fbclid : ""),
+      page_url: location.href, user_agent: navigator.userAgent, lead_source: "Meta ads landing page"
+    };
+  }
+  function eventId() { return "csq-" + Date.now() + "-" + Math.random().toString(36).slice(2, 8); }
+  function pixel(name, data, id) { try { if (window.fbq) window.fbq("track", name, data || {}, { eventID: id }); } catch (e) {} }
+
+  /* ---------- Views ---------- */
+  function show(view, push) {
+    $$("[data-view]").forEach(function (v) { v.hidden = v.getAttribute("data-view") !== view; });
+    if (push !== false) { try { history.pushState({ csq: view }, ""); } catch (e) {} }
+    var top = root.getBoundingClientRect().top + window.pageYOffset;
+    window.scrollTo(0, Math.max(0, top));
+    if (view === "step2") setTimeout(function () { $("#csq-street").focus({ preventScroll: true }); }, 260);
+    if (view === "thanks") setTimeout(function () { var h = $("[data-ty-focus]"); if (h) h.focus({ preventScroll: true }); }, 260);
+  }
+  window.addEventListener("popstate", function (e) {
+    var v = e.state && e.state.csq;
+    if (v === "thanks") return;
+    show(v === "step2" ? "step2" : "landing", false);
+  });
+  try { history.replaceState({ csq: "landing" }, ""); } catch (e) {}
+
+  $$("[data-goto-form]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var f = $("#csq-form1");
+      f.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+      setTimeout(function () { $("#csq-name").focus({ preventScroll: true }); }, 450);
+    });
+  });
+  $$("[data-back]").forEach(function (b) { b.addEventListener("click", function () { show("landing"); setTimeout(function () { $("#csq-form1").scrollIntoView({ block: "start" }); }, 30); }); });
+  $$("[data-call]").forEach(function (a) { a.addEventListener("click", function () { pixel("Contact", { content_name: "Tap to call", content_category: a.getAttribute("data-call") }, eventId()); }); });
+
+  /* ---------- Phone formatting ---------- */
+  var phone = $("#csq-phone");
+  function digits(v) { var d = (v || "").replace(/\D/g, ""); if (d.length === 11 && d.charAt(0) === "1") d = d.slice(1); return d.slice(0, 10); }
+  phone.addEventListener("input", function () {
+    var d = digits(phone.value), out = d;
+    if (d.length > 6) out = "(" + d.slice(0, 3) + ") " + d.slice(3, 6) + "-" + d.slice(6);
+    else if (d.length > 3) out = "(" + d.slice(0, 3) + ") " + d.slice(3);
+    else if (d.length) out = "(" + d;
+    phone.value = out;
+  });
+
+  /* ---------- Validation ---------- */
+  var rules = {
+    full_name: function (v) { return v.trim().length >= 2; },
+    phone: function (v) { return digits(v).length === 10; },
+    email: function (v) { return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.trim()); },
+    heating_issue: function (v) { return v.trim().length >= 3; },
+    address1: function (v) { return v.trim().length >= 4; },
+    city: function (v) { return v.trim().length >= 2; },
+    postal_code: function (v) { return $("#csq-country").value === "US" ? /^\d{5}(-\d{4})?$/.test(v.trim()) : v.trim().length >= 3; },
+    state: function (v) { return !!v; }, country: function (v) { return !!v; }
+  };
+  function check(el) {
+    var ok = rules[el.name] ? rules[el.name](el.value) : true;
+    var f = el.closest(".csq-field"); if (f) f.classList.toggle("is-bad", !ok);
+    el.setAttribute("aria-invalid", ok ? "false" : "true");
+    return ok;
+  }
+  function validate(form) {
+    var first = null;
+    $$(".csq-input", form).forEach(function (el) { if (!check(el) && !first) first = el; });
+    if (first) first.focus();
+    return !first;
+  }
+  $$(".csq-input").forEach(function (el) {
+    el.addEventListener("blur", function () { if (el.value) check(el); });
+    el.addEventListener("input", function () { var f = el.closest(".csq-field"); if (f && f.classList.contains("is-bad")) check(el); });
+  });
+
+  /* ---------- Sending ---------- */
+  function send(payload) {
+    if (!C.webhookUrl) { if (window.console) console.info("[CSQ] No webhookUrl set. Payload:", payload); return Promise.resolve(); }
+    var json = JSON.stringify(payload);
+    var timeout = new Promise(function (r) { setTimeout(r, 4000); });
+    var req = fetch(C.webhookUrl, { method: "POST", headers: { "Content-Type": "application/json" }, body: json, keepalive: true })
+      .catch(function () {
+        var fd = new URLSearchParams();
+        Object.keys(payload).forEach(function (k) { fd.append(k, payload[k] == null ? "" : String(payload[k])); });
+        return fetch(C.webhookUrl, { method: "POST", mode: "no-cors", body: fd, keepalive: true }).catch(function () {});
+      });
+    return Promise.race([req, timeout]);
+  }
+
+  /* ---------- Step 1 ---------- */
+  $("#csq-form1").addEventListener("submit", function (e) {
+    e.preventDefault();
+    if (this.company_website.value) return;            /* spam trap */
+    if (!validate(this)) return;
+    var name = $("#csq-name").value.trim().replace(/\s+/g, " ");
+    var parts = name.split(" ");
+    var d = digits(phone.value);
+    lead = Object.assign(attribution(), {
+      event_id: eventId(),
+      full_name: name, first_name: parts[0], last_name: parts.slice(1).join(" "),
+      phone: "+1" + d, phone_display: phone.value,
+      email: $("#csq-email").value.trim(), heating_issue: $("#csq-issue").value.trim()
+    });
+    $("[data-summary]").textContent = parts[0] + " · " + phone.value;
+    if (C.sendStep1) send(Object.assign({}, lead, { form_stage: "step_1_contact", submitted_at: new Date().toISOString() }));
+    show("step2");
+  });
+
+  /* ---------- Step 2 ---------- */
+  $("#csq-form2").addEventListener("submit", function (e) {
+    e.preventDefault();
+    if (!lead.phone) { show("landing"); return; }
+    if (!validate(this)) return;
+    var btn = this.querySelector("button[type=submit]"), label = btn.querySelector("[data-label]");
+    btn.disabled = true; label.textContent = "SENDING…";
+    var countryEl = $("#csq-country");
+    var full = Object.assign({}, lead, {
+      form_stage: "step_2_complete",
+      address1: $("#csq-street").value.trim(), city: $("#csq-city").value.trim(),
+      postal_code: $("#csq-zip").value.trim(), state: $("#csq-state").value,
+      country: countryEl.options[countryEl.selectedIndex].text, country_code: countryEl.value,
+      submitted_at: new Date().toISOString()
+    });
+    pixel("Lead", { content_name: "Heating callback request" }, full.event_id);
+    send(full).then(function () {
+      if (C.thankYouUrl) { location.href = C.thankYouUrl; return; }
+      btn.disabled = false; label.textContent = "REQUEST MY CALLBACK";
+      show("thanks");
+    });
+  });
+
+  /* ---------- Gentle reveal ---------- */
+  var items = $$("[data-reveal]");
+  if ("IntersectionObserver" in window && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    var io = new IntersectionObserver(function (es) { es.forEach(function (en) { if (en.isIntersecting) { en.target.classList.add("is-in"); io.unobserve(en.target); } }); }, { rootMargin: "0px 0px -8% 0px" });
+    items.forEach(function (el) { io.observe(el); });
+  } else { items.forEach(function (el) { el.classList.add("is-in"); }); }
+})();
+</script>

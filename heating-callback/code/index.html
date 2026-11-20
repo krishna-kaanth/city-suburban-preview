@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Heating Callback Page Code</title>
+<style>
+body{margin:0;background:#F3F6F8;color:#3F3F3F;font:16px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:760px;margin:0 auto;padding:32px 16px 64px}
+h1{color:#09263A;font-size:26px;line-height:1.25;margin:0 0 12px}
+h2{color:#09263A;font-size:19px;margin:32px 0 8px}
+a{color:#186AA4}
+code{background:#fff;border:1px solid #dde3e8;border-radius:4px;padding:1px 5px;font-size:14px}
+li{margin:6px 0}
+</style>
+</head>
+<body>
+<main>
+<h1>Heating callback landing page: code for GoHighLevel</h1>
+<p>This folder holds the complete code for the City &amp; Suburban Heating &amp; Cooling heating callback page. The finished page, exactly as a visitor from a Meta ad sees it, is at <a href="../">../heating-callback/</a>. It is designed for phones, and on a computer it shows as a centred phone-width column.</p>
+
+<h2>The code files</h2>
+<ul>
+<li><a href="ghl-custom-code-light.txt">ghl-custom-code-light.txt</a> (45 KB) is the recommended version. It is the whole page in one block of HTML, CSS and JavaScript, with the images loaded from this site.</li>
+<li><a href="ghl-custom-code-full.txt">ghl-custom-code-full.txt</a> (262 KB) is the same page with every image embedded in the code, so it depends on nothing else. Use it only if the code element accepts a file this large.</li>
+</ul>
+<p>The <code>.html</code> files beside them hold identical code; the <code>.txt</code> copies exist so a browser shows the code as text instead of running it.</p>
+
+<h2>How to build it in GoHighLevel</h2>
+<ol>
+<li>Create a blank page in the funnel or website and remove the default header and footer.</li>
+<li>Add one full-width section with zero padding on the section, row and column.</li>
+<li>Add a Custom JS/HTML element, paste the entire contents of the light code file, and save.</li>
+<li>Set the page title to "Heating Repair Callback | City &amp; Suburban Heating &amp; Cooling" and add <code>&lt;meta name="robots" content="noindex"&gt;</code> to the page's header code.</li>
+<li>Make sure the Meta Pixel base code is on the page.</li>
+</ol>
+<p>The code must be pasted as it is, not rebuilt from native GoHighLevel elements. The two-step form, the back-button behaviour, the Meta Lead event and the thank-you screen all run from the script inside it.</p>
+
+<h2>Connecting the form</h2>
+<p>The form sends each lead to a GoHighLevel workflow with an Inbound Webhook trigger. Paste that workflow's webhook URL between the quotes after <code>webhookUrl:</code> in the <code>CSQ_CONFIG</code> block at the top of the code. Until then the page works fully but sends nothing. Each lead is sent twice: once after Step 1 with <code>form_stage</code> set to <code>step_1_contact</code>, and again on the final submit with <code>step_2_complete</code> and the address.</p>
+</main>
+</body>
+</html>
