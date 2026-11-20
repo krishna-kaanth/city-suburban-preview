@@ -304,16 +304,6 @@
       </div>
     </section>
 
-    <section class="csq-offer" data-offer data-reveal>
-      <div class="csq-coupon">
-        <div class="csq-coupon-amt csq-ubuntu">$50</div>
-        <div>
-          <div class="csq-coupon-t csq-ubuntu">off your service call</div>
-          <div class="csq-coupon-s">Up to $1,000 off a new system. Winter offer ends Nov 30.</div>
-        </div>
-      </div>
-    </section>
-
     <section class="csq-sec first" data-reveal>
       <div class="csq-eyebrow">HOW IT WORKS</div>
       <h2 class="csq-h2 csq-ubuntu">Warm again in <span>three steps.</span></h2>
